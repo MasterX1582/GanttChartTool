@@ -1,0 +1,466 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+header {
+    background-color: #3498db;
+    color: white;
+    padding: 1rem;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+}
+
+.settings-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: background-color 0.3s;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.settings-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.settings-btn svg {
+    fill: white;
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.sidebar {
+    background-color: #fff;
+    width: 300px;
+    padding: 1rem;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.chart-container {
+    flex-grow: 1;
+    position: relative;
+    padding: 1rem;
+    overflow: auto;
+}
+
+/* Chart handles overlay */
+.chart-handles-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.chart-handles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let events pass through to canvas by default */
+    z-index: 10;
+}
+
+.task-handle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #000;
+    border: 2px solid #fff;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    cursor: ew-resize;
+    pointer-events: auto; /* Enable events for handles */
+}
+
+.handle-start {
+    cursor: w-resize;
+}
+
+.handle-end {
+    cursor: e-resize;
+}
+
+.task-bar {
+    position: absolute;
+    height: 16px;
+    border-radius: 4px;
+    cursor: move;
+    pointer-events: auto; /* Enable events for task bars */
+}
+
+.chart-controls {
+    margin-bottom: 1rem;
+}
+
+#ganttChart {
+    flex: 1;
+    overflow: auto;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.btn:hover {
+    background-color: #2980b9;
+}
+
+.btn-secondary {
+    background-color: #95a5a6;
+}
+
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+}
+
+.task-item {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.task-item h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.task-dates {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin-bottom: 0.5rem;
+}
+
+.task-financials {
+    font-size: 0.85rem;
+    color: #2c3e50;
+    display: flex;
+    justify-content: space-between;
+}
+
+.task-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.task-actions button {
+    width: 48%;
+    padding: 0.25rem 0;
+    font-size: 0.85rem;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 1.5rem;
+    border-radius: 4px;
+    width: 80%;
+    max-width: 500px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.modal-buttons .btn {
+    width: 48%;
+}
+
+.notification-container {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 999;
+}
+
+.notification {
+    background-color: #2ecc71;
+    color: white;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;
+    max-width: 300px;
+}
+
+.notification.error {
+    background-color: #e74c3c;
+}
+
+/* Required field marker */
+.required {
+    color: #e74c3c;
+}
+
+/* Budget indicators */
+.budget-indicator {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.budget-indicator.under {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.budget-indicator.over {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.budget-indicator.on-track {
+    background-color: #3498db;
+    color: white;
+}
+
+/* Gantt chart table styling */
+.gantt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.gantt-table th, .gantt-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.gantt-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+/* Confirmation dialog */
+.confirmation-dialog {
+    position: fixed;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirmation-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 100%;
+}
+
+.confirmation-content h3 {
+    margin-top: 0;
+}
+
+.confirmation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.confirmation-buttons button {
+    width: 48%;
+}
+
+/* Settings styles */
+.settings-content {
+    max-width: 500px;
+}
+
+.settings-option {
+    margin: 20px 0;
+}
+
+.toggle-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    margin-left: 10px;
+}
+
+.toggle-checkbox {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.toggle-checkbox:checked + .toggle-slider {
+    background-color: #3498db;
+}
+
+.toggle-checkbox:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.settings-actions {
+    margin-top: 20px;
+    text-align: right;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}

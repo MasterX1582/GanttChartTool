@@ -1,0 +1,33 @@
+# Development folders
+node_modules/
+release-builds/
+build/icons/
+dist/
+
+# Build tools
+electron-builder.yml
+.travis.yml
+.gitignore
+.github/
+
+# Development files
+*.log
+npm-debug.log*
+.eslintrc
+.editorconfig
+.vscode/
+.idea/
+
+# Source control
+.git/
+.gitignore
+
+# Packaged apps
+*.exe
+*.dmg
+*.zip
+*.7z
+
+# Temporary files
+tmp/
+temp/

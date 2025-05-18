@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Gantt Chart Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Direct CDN references for Chart.js to ensure it loads properly -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script>
+        // Ensure Chart.js is properly loaded before initializing the application
+        window.addEventListener('load', function() {
+            console.log('Chart.js available:', typeof Chart !== 'undefined');
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>Gantt Chart Tool</h1>
+                <button id="settingsBtn" class="settings-btn" title="Settings">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="project-info">
+                    <h2>Project Information</h2>
+                    <div class="form-group">
+                        <label for="projectName">Project Name:</label>
+                        <input type="text" id="projectName" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="projectStart">Project Start Date:</label>
+                        <input type="date" id="projectStart" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="projectEnd">Project End Date:</label>
+                        <input type="date" id="projectEnd" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="projectFunding">Project Budget ($):</label>
+                        <input type="number" id="projectFunding" class="form-control" min="0">
+                    </div>
+                </div>
+                
+                <div class="tasks-section">
+                    <h2>Project Tasks</h2>
+                    <div id="taskList"></div>
+                    <button id="addTask" class="btn">Add New Task</button>
+                </div>
+                
+                <div class="export-section">
+                    <h2>Project Options</h2>
+                    <button id="saveProject" class="btn">Save Project</button>
+                    <button id="loadProject" class="btn">Load Project</button>
+                    <h2>Export Options</h2>
+                    <button id="exportPDF" class="btn">Export to PDF</button>
+                    <button id="exportExcel" class="btn">Export to Excel</button>
+                    <button id="exportPowerPoint" class="btn">Export to PowerPoint</button>
+                </div>
+            </div>
+            
+            <div class="chart-container" id="chartContainer">
+                <canvas id="ganttChartCanvas" width="800" height="400"></canvas>
+                <div id="chartHandles" class="chart-handles"></div>
+                <div class="chart-controls">
+                    <button id="refreshChart" class="btn">Refresh Chart</button>
+                </div>
+                <!-- Budget indicators -->
+                <div id="budgetIndicators" class="budget-indicators">
+                    <div class="budget-summary">
+                        <h3>Budget Summary</h3>
+                        <div id="totalCost" class="budget-item">Total Cost: $<span>0</span></div>
+                        <div id="totalBudget" class="budget-item">Total Budget: $<span>0</span></div>
+                    </div>
+                    <div id="budgetStatus" class="budget-indicator on-track">
+                        <span id="budgetStatusText">On Budget</span>
+                        <span id="budgetDifference">$0</span>
+                    </div>
+                </div>
+                
+                <!-- Add a simple table as fallback display for tasks -->
+                <div id="ganttTableFallback" style="margin-top: 20px;">
+                    <table class="gantt-table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Duration</th>
+                                <th>Cost</th>
+                                <th>Budget</th>
+                                <th>Responsible</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ganttTableBody">
+                            <!-- Task rows will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="taskFormModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&times;</span>
+                <h2 id="taskFormTitle">Add New Task</h2>
+                <div class="form-group">
+                    <label for="taskName">Task Name: <span class="required">*</span></label>
+                    <input type="text" id="taskName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="taskStart">Start Date: (optional)</label>
+                    <input type="date" id="taskStart" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="taskEnd">End Date: (optional)</label>
+                    <input type="date" id="taskEnd" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="taskPrice">Cost ($): (optional)</label>
+                    <input type="number" id="taskPrice" class="form-control" min="0" placeholder="Cost to complete this task">
+                </div>
+                <div class="form-group">
+                    <label for="taskFunding">Budget ($): (optional)</label>
+                    <input type="number" id="taskFunding" class="form-control" min="0" placeholder="Budget allocated for this task">
+                </div>
+                <div class="form-group">
+                    <label for="taskResponsible">Responsible Person/Team: (optional)</label>
+                    <input type="text" id="taskResponsible" class="form-control" placeholder="Name of person or team responsible for this task">
+                </div>
+                <input type="hidden" id="taskId">
+                <div class="modal-buttons">
+                    <button id="saveTask" class="btn">Save Task</button>
+                    <button id="cancelTask" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="notificationContainer" class="notification-container"></div>
+        
+        <!-- Confirmation Dialog for Task Date Changes -->
+        <div id="confirmationDialog" class="confirmation-dialog" style="display: none;">
+            <div class="confirmation-content">
+                <h3>Confirm Date Change</h3>
+                <p id="confirmationMessage">Are you sure you want to change the dates for this task?</p>
+                <div class="confirmation-buttons">
+                    <button id="confirmYes" class="btn">Yes, Change</button>
+                    <button id="confirmNo" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Menu Dialog -->
+    <div id="settingsDialog" class="modal" style="display: none;">
+        <div class="modal-content settings-content">
+            <span class="close" id="closeSettings">&times;</span>
+            <h2>Settings</h2>
+            <div class="settings-option">
+                <label for="debugToggle" class="toggle-label">
+                    <span>Show Debug Panel</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="debugToggle" class="toggle-checkbox">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="settings-option">
+                <label for="verboseChartDebug" class="toggle-label">
+                    <span>Verbose Chart Debugging</span>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="verboseChartDebug" class="toggle-checkbox">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </label>
+            </div>
+            <div class="settings-actions">
+                <button id="saveSettings" class="btn">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add debug message display -->
+    <div id="debugMessages" style="position: fixed; bottom: 0; left: 0; background: rgba(0,0,0,0.7); color: white; padding: 10px; max-height: 100px; overflow: auto; width: 100%; display: none;">
+        <div id="debugContent"></div>
+    </div>
+    
+    <script>
+        // Simple preload script to ensure window variables are accessible
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM content loaded - preload script');
+            window.isElectron = true;
+        });
+    </script>
+    <!-- App scripts -->
+    <script src="gantt-chart.js"></script>
+    <script src="renderer.js"></script>
+</body>
+</html>
