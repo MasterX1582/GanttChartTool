@@ -9,7 +9,7 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "clean": "powershell -Command \"if(Test-Path release-builds) { Remove-Item -Recurse -Force release-builds }\"",
-    "package-win": "npm run clean && electron-packager . \"Gantt Chart Tool\" --platform=win32 --arch=x64 --icon=build/icon.ico --out=release-builds --overwrite --no-console --ignore=\"node_modules/((?!(html-pdf|exceljs|pptxgenjs|chart.js)).*)|release-builds|.git|.vscode|Output|dist|installer.iss\" --prune=true",
+    "package-win": "npm run clean && electron-packager . \"Gantt Chart Tool\" --platform=win32 --arch=x64 --icon=build/icon.ico --out=release-builds --overwrite --no-console --ignore=\"release-builds|.git|.vscode|Output|dist|installer.iss\" --prune=false",
     "package-win-dev": "npm run clean && electron-packager . \"Gantt Chart Tool Dev\" --platform=win32 --arch=x64 --icon=build/icon.ico --out=release-builds --overwrite --ignore=\"node_modules|release-builds|.git|.vscode|Output|dist|installer.iss\""
   },
   "keywords": [
@@ -33,7 +33,10 @@
     "chart.js": "^4.4.0",
     "exceljs": "^4.4.0",
     "html-pdf": "^3.0.1",
-    "pptxgenjs": "^3.12.0"
+    "jszip": "^3.10.1",
+    "phantomjs-prebuilt": "^2.1.16",
+    "pptxgenjs": "^3.12.0",
+    "uuid": "^11.1.0"
   },
   "build": {
     "appId": "com.ganttchart.tool",

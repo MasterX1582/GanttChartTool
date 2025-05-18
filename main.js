@@ -70,8 +70,38 @@ ipcMain.on('save-pdf', async (event, data) => {
     const pdf = require('html-pdf');
     const htmlContent = data.htmlContent;
     
+    // Get PhantomJS path from the installed module with fallbacks
+    let phantomjsPath;
+    try {
+      const phantomjs = require('phantomjs-prebuilt');
+      phantomjsPath = phantomjs.path;
+      console.log(`Using PhantomJS from: ${phantomjsPath}`);
+    } catch (err) {
+      console.error('Error loading phantomjs-prebuilt:', err);
+      // Try to find phantomjs in standard locations
+      const possiblePaths = [
+        path.join(__dirname, 'node_modules', 'phantomjs-prebuilt', 'lib', 'phantom', 'bin', 'phantomjs.exe'),
+        path.join(__dirname, 'node_modules', '.bin', 'phantomjs.exe'),
+        'phantomjs'
+      ];
+      
+      for (const possiblePath of possiblePaths) {
+        if (fs.existsSync(possiblePath)) {
+          phantomjsPath = possiblePath;
+          console.log(`Found PhantomJS at: ${phantomjsPath}`);
+          break;
+        }
+      }
+      
+      if (!phantomjsPath) {
+        console.error('Could not find PhantomJS in any standard location');
+        throw new Error('PhantomJS not found. Please install it manually.');
+      }
+    }
+    
     // Use landscape orientation and larger page size to better fit the Gantt chart
     pdf.create(htmlContent, { 
+      phantomPath: phantomjsPath,
       format: 'A4', 
       orientation: 'landscape',
       border: '10mm',
@@ -114,6 +144,18 @@ ipcMain.on('save-excel', async (event, data) => {
     
     console.log(`Excel will be saved to: ${filePath}`);
     console.log(`Task data received: ${data.tasks ? data.tasks.length : 0} tasks`);
+
+    // Make sure jszip is loaded first since ExcelJS depends on it
+    try {
+      require('jszip');
+      console.log('jszip loaded successfully');
+    } catch (err) {
+      console.error('Failed to load jszip:', err);
+      const jszipPath = path.join(__dirname, 'node_modules', 'jszip');
+      console.log(`Attempting to load jszip from: ${jszipPath}`);
+      // This line will throw if jszip is truly not available
+      require(jszipPath);
+    }
 
     // Using ExcelJS for Excel generation
     const Excel = require('exceljs');
@@ -444,8 +486,22 @@ ipcMain.on('save-ppt', async (event, data) => {
     
     if (!filePath) return;
 
-    // Use pptxgenjs to create the PowerPoint file
-    const pptx = require('pptxgenjs');
+    // Directly require the main module - handling different versions of pptxgenjs
+    let pptx;
+    try {
+      // Try the newer module structure first
+      pptx = require('pptxgenjs');
+    } catch (err) {
+      try {
+        // Fall back to the older module structure if needed
+        pptx = require('pptxgenjs/dist/pptxgen.bundle.js');
+      } catch (err2) {
+        // If all else fails, try the CommonJS version
+        const pptxPath = path.join(__dirname, 'node_modules', 'pptxgenjs', 'dist', 'pptxgen.bundle.js');
+        pptx = require(pptxPath);
+      }
+    }
+    console.log('Successfully loaded PowerPoint module');
     const presentation = new pptx();
     
     // Set presentation metadata
